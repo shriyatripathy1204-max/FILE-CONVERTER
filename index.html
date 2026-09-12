@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PixelFlow — Fast, Fun & Private Image Converter</title>
+  <meta name="description" content="A cheerful, 100% private, browser-based image and file converter. Convert Image to PDF, PNG to JPG, WEBP, compress, and resize images locally with zero server uploads." />
+
+  <!-- Google Fonts: Baloo 2 (Headings) & Nunito (Body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800;900&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            heading: ['"Baloo 2"', 'cursive', 'sans-serif'],
+            body: ['"Nunito"', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            ground: '#4361EE',
+            'ground-dark': '#3450D9',
+            pop: {
+              yellow: '#FFD12E',
+              'yellow-shadow': '#D49D00',
+              coral: '#FF5A5F',
+              'coral-shadow': '#D4363B',
+              mint: '#06D6A0',
+              'mint-shadow': '#049E75',
+              purple: '#8338EC',
+              'purple-shadow': '#5B1CB7',
+              blue: '#3A86FF',
+              'blue-shadow': '#1B65DE',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- jsPDF for Client-Side PDF Generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- JSZip for Client-Side Batch ZIP Generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <!-- Custom Styles (Tactile 3D Buttons & Playful Pop UI) -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="min-h-full bg-[#4361EE] text-slate-800 flex flex-col font-body selection:bg-yellow-300 selection:text-slate-900 transition-colors duration-200">
+
+  <!-- ================= TOP FLOATING NAVIGATION ================= -->
+  <header class="sticky top-0 z-40 w-full px-4 sm:px-6 lg:px-8 pt-3 pb-2">
+    <div class="max-w-6xl mx-auto">
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-full px-5 py-2.5 shadow-lg shadow-blue-900/15 flex items-center justify-between border-2 border-white">
+        
+        <!-- Logo & Brand -->
+        <div class="flex items-center gap-5">
+          <a href="#" id="brandLogo" class="flex items-center gap-2.5 group">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pop-yellow to-amber-400 flex items-center justify-center text-amber-950 shadow-md group-hover:rotate-6 transition-transform">
+              <i data-lucide="sparkles" class="w-5 h-5 fill-current"></i>
+            </div>
+            <div class="flex flex-col">
+              <span class="text-xl font-extrabold font-heading tracking-tight text-slate-900 leading-tight">
+                PixelFlow<span class="text-pop-coral">.</span>
+              </span>
+              <span class="text-[10px] font-extrabold uppercase tracking-wider text-indigo-500 -mt-0.5">
+                Local Image Magic
+              </span>
+            </div>
+          </a>
+
+          <!-- Quick Switcher Dropdown (Desktop) -->
+          <div class="relative hidden md:block">
+            <button id="quickToolBtn" class="pop-btn pop-btn-white px-3.5 py-1.5 text-xs">
+              <i data-lucide="grid" class="w-3.5 h-3.5 text-indigo-500"></i>
+              <span id="quickToolText">All Tools</span>
+              <i data-lucide="chevron-down" class="w-3.5 h-3.5 opacity-60"></i>
+            </button>
+            <!-- Dropdown Menu -->
+            <div id="quickToolDropdown" class="hidden absolute top-full left-0 mt-2.5 w-60 rounded-2xl bg-white shadow-2xl border-2 border-slate-100 p-2 z-50 animate-pop">
+              <button class="nav-tool-link w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2.5 transition-colors" data-tool="image-to-pdf">
+                <span class="w-6 h-6 rounded-lg bg-red-100 text-red-600 flex items-center justify-center"><i data-lucide="file-text" class="w-3.5 h-3.5"></i></span>
+                <span>Image to PDF</span>
+              </button>
+              <button class="nav-tool-link w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2.5 transition-colors" data-tool="png-to-jpg">
+                <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center"><i data-lucide="image" class="w-3.5 h-3.5"></i></span>
+                <span>PNG to JPG</span>
+              </button>
+              <button class="nav-tool-link w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2.5 transition-colors" data-tool="jpg-to-png">
+                <span class="w-6 h-6 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center"><i data-lucide="file-check" class="w-3.5 h-3.5"></i></span>
+                <span>JPG to PNG</span>
+              </button>
+              <button class="nav-tool-link w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2.5 transition-colors" data-tool="webp-to-jpg">
+                <span class="w-6 h-6 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center"><i data-lucide="sparkles" class="w-3.5 h-3.5"></i></span>
+                <span>WEBP to JPG</span>
+              </button>
+              <button class="nav-tool-link w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2.5 transition-colors" data-tool="compressor">
+                <span class="w-6 h-6 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center"><i data-lucide="minimize-2" class="w-3.5 h-3.5"></i></span>
+                <span>Compress & Resize</span>
+              </button>
+              <button class="nav-tool-link w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2.5 transition-colors" data-tool="universal">
+                <span class="w-6 h-6 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i></span>
+                <span>Universal Converter</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Navigation Items -->
+        <div class="flex items-center gap-3">
+          <!-- Friendly Circular Done Status -->
+          <div class="hidden sm:flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-extrabold border border-emerald-200">
+            <span class="status-circle-done !w-5 !h-5 !box-shadow-none text-[10px]">
+              <i data-lucide="check" class="w-3 h-3 stroke-[3]"></i>
+            </span>
+            <span>100% In-Browser & Private</span>
+          </div>
+
+          <!-- Home Button (When in workspace) -->
+          <button id="navHomeBtn" class="hidden pop-btn pop-btn-white px-3.5 py-1.5 text-xs text-slate-700">
+            <i data-lucide="home" class="w-3.5 h-3.5"></i>
+            <span>All Tools</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTENT ================= -->
+  <main class="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 flex flex-col">
+
+    <!-- ================= 1. DASHBOARD VIEW ================= -->
+    <section id="dashboardView" class="space-y-10 animate-pop">
+      
+      <!-- Cheerful Hero Section -->
+      <div class="relative text-center max-w-3xl mx-auto pt-4 pb-2">
+        
+        <!-- Friendly Pill Tag -->
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-white text-xs font-extrabold shadow-sm border border-white/30 mb-5 animate-float">
+          <span class="w-2.5 h-2.5 rounded-full bg-pop-yellow shadow-[0_0_8px_#FFD12E]"></span>
+          <span>Zero Server Uploads • Zero Wait • 100% Free</span>
+        </div>
+
+        <!-- Chunky White Heading -->
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black font-heading tracking-tight text-white leading-none drop-shadow-sm">
+          Convert & Optimize Images <br class="hidden sm:inline" />
+          <span class="text-pop-yellow underline decoration-wavy decoration-pop-coral/80 decoration-2 underline-offset-8">
+            Right in Your Browser!
+          </span>
+        </h1>
+
+        <p class="mt-5 text-base sm:text-lg text-blue-100 font-bold max-w-2xl mx-auto leading-relaxed">
+          PixelFlow turns your images into PDFs, swaps formats, shrinks file sizes, and bundles downloads instantly. Your private photos never leave your device.
+        </p>
+
+        <!-- Playful Feature Badges -->
+        <div class="mt-7 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto text-left">
+          <div class="flex items-center gap-2.5 p-3 rounded-2xl bg-white text-slate-800 shadow-md shadow-blue-900/10 font-extrabold text-xs">
+            <span class="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+              <i data-lucide="zap" class="w-4 h-4 fill-current"></i>
+            </span>
+            <span>Zero Lag</span>
+          </div>
+          <div class="flex items-center gap-2.5 p-3 rounded-2xl bg-white text-slate-800 shadow-md shadow-blue-900/10 font-extrabold text-xs">
+            <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+              <i data-lucide="lock" class="w-4 h-4"></i>
+            </span>
+            <span>100% Private</span>
+          </div>
+          <div class="flex items-center gap-2.5 p-3 rounded-2xl bg-white text-slate-800 shadow-md shadow-blue-900/10 font-extrabold text-xs">
+            <span class="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
+              <i data-lucide="archive" class="w-4 h-4"></i>
+            </span>
+            <span>ZIP Bundles</span>
+          </div>
+          <div class="flex items-center gap-2.5 p-3 rounded-2xl bg-white text-slate-800 shadow-md shadow-blue-900/10 font-extrabold text-xs">
+            <span class="w-8 h-8 rounded-xl bg-pink-100 text-pink-600 flex items-center justify-center shrink-0">
+              <i data-lucide="infinity" class="w-4 h-4"></i>
+            </span>
+            <span>No Limits</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tool Cards Section -->
+      <div>
+        <div class="flex items-center justify-between mb-6 pb-2 border-b-2 border-white/20">
+          <div>
+            <h2 class="text-2xl sm:text-3xl font-black font-heading text-white">Pick a Tool to Start!</h2>
+            <p class="text-sm text-blue-100 font-semibold">Click any utility below to open its friendly workspace.</p>
+          </div>
+          <span class="px-3 py-1 rounded-full bg-white text-indigo-700 text-xs font-black shadow-sm">
+            6 Fast Tools
+          </span>
+        </div>
+
+        <!-- 6 Generously Rounded White Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+          <!-- Card 1: Image to PDF -->
+          <div class="tool-card pop-card pop-card-hover p-6 cursor-pointer flex flex-col justify-between group" data-tool="image-to-pdf">
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <div class="icon-disc bg-red-100 text-red-500">
+                  <i data-lucide="file-text" class="w-7 h-7"></i>
+                </div>
+                <span class="px-3 py-1 rounded-full text-xs font-black bg-red-50 text-red-600 border border-red-200">
+                  Document
+                </span>
+              </div>
+              <h3 class="text-xl font-black font-heading text-slate-900 group-hover:text-ground transition-colors">
+                Image to PDF
+              </h3>
+              <p class="mt-2 text-sm text-slate-500 font-semibold leading-relaxed">
+                Combine PNG, JPG, or WEBP photos into a clean PDF document. Drag pages to reorder before saving!
+              </p>
+            </div>
+            <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-400 flex items-center gap-1.5">
+                <i data-lucide="arrow-up-down" class="w-3.5 h-3.5"></i> Custom Page Order
+              </span>
+              <button class="pop-btn pop-btn-coral text-xs px-4 py-1.5">
+                <span>Open</span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 2: PNG to JPG -->
+          <div class="tool-card pop-card pop-card-hover p-6 cursor-pointer flex flex-col justify-between group" data-tool="png-to-jpg">
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <div class="icon-disc bg-emerald-100 text-emerald-500">
+                  <i data-lucide="image" class="w-7 h-7"></i>
+                </div>
+                <span class="px-3 py-1 rounded-full text-xs font-black bg-emerald-50 text-emerald-600 border border-emerald-200">
+                  Transcode
+                </span>
+              </div>
+              <h3 class="text-xl font-black font-heading text-slate-900 group-hover:text-ground transition-colors">
+                PNG to JPG
+              </h3>
+              <p class="mt-2 text-sm text-slate-500 font-semibold leading-relaxed">
+                Turn heavy PNGs into lightweight JPEGs. Pick any background fill color for transparent areas!
+              </p>
+            </div>
+            <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-400 flex items-center gap-1.5">
+                <i data-lucide="palette" class="w-3.5 h-3.5"></i> Background Picker
+              </span>
+              <button class="pop-btn pop-btn-mint text-xs px-4 py-1.5">
+                <span>Open</span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 3: JPG to PNG -->
+          <div class="tool-card pop-card pop-card-hover p-6 cursor-pointer flex flex-col justify-between group" data-tool="jpg-to-png">
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <div class="icon-disc bg-blue-100 text-blue-500">
+                  <i data-lucide="file-check" class="w-7 h-7"></i>
+                </div>
+                <span class="px-3 py-1 rounded-full text-xs font-black bg-blue-50 text-blue-600 border border-blue-200">
+                  Lossless
+                </span>
+              </div>
+              <h3 class="text-xl font-black font-heading text-slate-900 group-hover:text-ground transition-colors">
+                JPG to PNG
+              </h3>
+              <p class="mt-2 text-sm text-slate-500 font-semibold leading-relaxed">
+                Convert compressed JPEGs into uncompressed, crisp PNG raster format with full pixel fidelity.
+              </p>
+            </div>
+            <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-400 flex items-center gap-1.5">
+                <i data-lucide="sparkle" class="w-3.5 h-3.5"></i> Full Fidelity
+              </span>
+              <button class="pop-btn pop-btn-purple text-xs px-4 py-1.5">
+                <span>Open</span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 4: WEBP to JPG -->
+          <div class="tool-card pop-card pop-card-hover p-6 cursor-pointer flex flex-col justify-between group" data-tool="webp-to-jpg">
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <div class="icon-disc bg-amber-100 text-amber-500">
+                  <i data-lucide="sparkles" class="w-7 h-7"></i>
+                </div>
+                <span class="px-3 py-1 rounded-full text-xs font-black bg-amber-50 text-amber-600 border border-amber-200">
+                  Universal
+                </span>
+              </div>
+              <h3 class="text-xl font-black font-heading text-slate-900 group-hover:text-ground transition-colors">
+                WEBP to JPG
+              </h3>
+              <p class="mt-2 text-sm text-slate-500 font-semibold leading-relaxed">
+                Unlock downloaded WEBP files that won't open in older apps. Convert them to universal JPEGs.
+              </p>
+            </div>
+            <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-400 flex items-center gap-1.5">
+                <i data-lucide="sliders" class="w-3.5 h-3.5"></i> Quality Tuning
+              </span>
+              <button class="pop-btn pop-btn-yellow text-xs px-4 py-1.5">
+                <span>Open</span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 5: Image Compressor & Resizer -->
+          <div class="tool-card pop-card pop-card-hover p-6 cursor-pointer flex flex-col justify-between group" data-tool="compressor">
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <div class="icon-disc bg-purple-100 text-purple-500">
+                  <i data-lucide="minimize-2" class="w-7 h-7"></i>
+                </div>
+                <span class="px-3 py-1 rounded-full text-xs font-black bg-purple-50 text-purple-600 border border-purple-200">
+                  Optimizer
+                </span>
+              </div>
+              <h3 class="text-xl font-black font-heading text-slate-900 group-hover:text-ground transition-colors">
+                Compress & Resize
+              </h3>
+              <p class="mt-2 text-sm text-slate-500 font-semibold leading-relaxed">
+                Shrink bulky images up to 85%! Scale by percentage or set custom pixel dimensions with aspect ratio lock.
+              </p>
+            </div>
+            <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-400 flex items-center gap-1.5">
+                <i data-lucide="scaling" class="w-3.5 h-3.5"></i> Aspect Lock
+              </span>
+              <button class="pop-btn pop-btn-yellow text-xs px-4 py-1.5">
+                <span>Open</span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 6: Universal Converter -->
+          <div class="tool-card pop-card pop-card-hover p-6 cursor-pointer flex flex-col justify-between group" data-tool="universal">
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <div class="icon-disc bg-pink-100 text-pink-500">
+                  <i data-lucide="refresh-cw" class="w-7 h-7"></i>
+                </div>
+                <span class="px-3 py-1 rounded-full text-xs font-black bg-pink-50 text-pink-600 border border-pink-200">
+                  All-in-One
+                </span>
+              </div>
+              <h3 class="text-xl font-black font-heading text-slate-900 group-hover:text-ground transition-colors">
+                Universal Converter
+              </h3>
+              <p class="mt-2 text-sm text-slate-500 font-semibold leading-relaxed">
+                Convert any photo into modern super-small WEBP, transparent PNG, or standard JPEG with one click.
+              </p>
+            </div>
+            <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-400 flex items-center gap-1.5">
+                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Any Format
+              </span>
+              <button class="pop-btn pop-btn-coral text-xs px-4 py-1.5">
+                <span>Open</span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- FAQ Container -->
+      <div class="pop-card p-8 sm:p-10 space-y-4">
+        <h3 class="text-2xl font-black font-heading text-slate-900 text-center mb-6">
+          Frequently Asked Questions
+        </h3>
+        
+        <div class="space-y-3">
+          <details class="group rounded-2xl bg-slate-50 p-4 border border-slate-100 transition-all">
+            <summary class="flex justify-between items-center font-bold text-slate-800 cursor-pointer list-none text-sm sm:text-base">
+              <span>Is PixelFlow really 100% private and free?</span>
+              <span class="w-6 h-6 rounded-full bg-white flex items-center justify-center text-slate-500 shadow-sm group-open:rotate-180 transition-transform">
+                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+              </span>
+            </summary>
+            <p class="mt-3 text-sm text-slate-600 font-semibold leading-relaxed border-t border-slate-200/60 pt-3">
+              Yes! Check your browser's Network tab: no image file is ever uploaded to any server. All processing runs right on your computer using native HTML5 Canvas, FileReader, and WebAssembly APIs.
+            </p>
+          </details>
+
+          <details class="group rounded-2xl bg-slate-50 p-4 border border-slate-100 transition-all">
+            <summary class="flex justify-between items-center font-bold text-slate-800 cursor-pointer list-none text-sm sm:text-base">
+              <span>Can I reorder pages when making a PDF?</span>
+              <span class="w-6 h-6 rounded-full bg-white flex items-center justify-center text-slate-500 shadow-sm group-open:rotate-180 transition-transform">
+                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+              </span>
+            </summary>
+            <p class="mt-3 text-sm text-slate-600 font-semibold leading-relaxed border-t border-slate-200/60 pt-3">
+              Absolutely! When you upload multiple images to the Image to PDF tool, you can freely drag cards around or use the friendly left/right arrow buttons to customize the final PDF page order.
+            </p>
+          </details>
+
+          <details class="group rounded-2xl bg-slate-50 p-4 border border-slate-100 transition-all">
+            <summary class="flex justify-between items-center font-bold text-slate-800 cursor-pointer list-none text-sm sm:text-base">
+              <span>Can I download multiple converted files as a ZIP?</span>
+              <span class="w-6 h-6 rounded-full bg-white flex items-center justify-center text-slate-500 shadow-sm group-open:rotate-180 transition-transform">
+                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+              </span>
+            </summary>
+            <p class="mt-3 text-sm text-slate-600 font-semibold leading-relaxed border-t border-slate-200/60 pt-3">
+              Yes! Whenever you convert 2 or more files, PixelFlow activates the "Download All as .ZIP" button to package everything into a single download right inside your browser.
+            </p>
+          </details>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================= 2. TOOL WORKSPACE VIEW ================= -->
+    <section id="workspaceView" class="hidden flex-col gap-6 animate-pop">
+      
+      <!-- Workspace Navigation Bar -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b-2 border-white/20">
+        <div class="flex items-center gap-3">
+          <button id="backToHomeBtn" class="pop-btn pop-btn-white px-4 py-2 text-xs">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <span>All Tools</span>
+          </button>
+          <div class="flex items-center gap-2.5">
+            <div id="toolHeaderIcon" class="icon-disc !w-10 !h-10 bg-white text-ground shadow-sm shrink-0">
+              <i data-lucide="file-text" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h2 id="toolHeaderTitle" class="text-2xl font-black font-heading text-white">Image to PDF</h2>
+              <p id="toolHeaderDesc" class="text-xs text-blue-100 font-bold">Combine photos into a neat PDF document.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Counters -->
+        <div id="workspaceStats" class="hidden sm:flex items-center gap-2">
+          <span id="queueCountBadge" class="px-3.5 py-1.5 rounded-full bg-white text-ground font-black text-xs shadow-sm">
+            0 files queued
+          </span>
+          <button id="clearAllQueueBtn" class="pop-btn pop-btn-coral text-xs px-3.5 py-1.5">
+            Clear All
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Workspace: 2 Column Layout -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Left / Center Column (Files & Dropzone) -->
+        <div class="lg:col-span-2 space-y-6">
+
+          <!-- Cheerful Dropzone Card -->
+          <div id="dropzoneContainer" class="pop-card p-8 sm:p-12 text-center border-3 border-dashed border-indigo-200 hover:border-pop-yellow cursor-pointer relative overflow-hidden group">
+            <input type="file" id="fileInput" class="hidden" multiple accept="image/*" />
+            
+            <div class="flex flex-col items-center justify-center gap-3 pointer-events-none">
+              <div class="w-20 h-20 rounded-3xl bg-amber-100 text-amber-600 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
+                <i data-lucide="upload-cloud" class="w-10 h-10"></i>
+              </div>
+              <div class="space-y-1">
+                <h4 class="text-xl font-black font-heading text-slate-900">
+                  Drop your files here, or <span class="text-ground underline decoration-wavy decoration-pop-coral decoration-2 underline-offset-4">browse</span>
+                </h4>
+                <p class="text-xs text-slate-500 font-bold">
+                  Select multiple files • Or press <kbd class="px-2 py-0.5 rounded-lg bg-slate-100 text-[11px] font-mono border border-slate-300">Ctrl+V</kbd> to paste from clipboard
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center justify-center gap-2 mt-2">
+                <span id="acceptedFormatsPill" class="text-xs font-black px-3 py-1 rounded-full bg-slate-100 text-slate-600">
+                  Accepts: PNG, JPG, WEBP, SVG
+                </span>
+                <span class="text-xs font-black px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">
+                  No Size Limit!
+                </span>
+              </div>
+            </div>
+
+            <!-- Dragging Overlay State -->
+            <div id="dragOverlay" class="hidden absolute inset-0 bg-ground/95 text-white flex flex-col items-center justify-center gap-3 z-20 animate-pop">
+              <i data-lucide="arrow-down-circle" class="w-16 h-16 animate-bounce text-pop-yellow"></i>
+              <p class="text-2xl font-black font-heading">Drop files right here!</p>
+            </div>
+          </div>
+
+          <!-- File Queue Section -->
+          <div id="fileQueueSection" class="hidden space-y-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <h3 class="text-lg font-black font-heading text-white flex items-center gap-2">
+                  <span>Queued Photos</span>
+                  <span id="fileCountBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-pop-yellow text-amber-950 font-black">0</span>
+                </h3>
+                <span id="reorderTipBadge" class="hidden text-xs text-blue-100 font-bold sm:flex items-center gap-1">
+                  <i data-lucide="info" class="w-3.5 h-3.5"></i> Drag cards or use arrows to change page sequence!
+                </span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="addMoreBtn" class="pop-btn pop-btn-white text-xs px-3.5 py-1.5">
+                  <i data-lucide="plus" class="w-3.5 h-3.5 text-ground"></i> Add More
+                </button>
+                <button id="clearQueueMobileBtn" class="sm:hidden pop-btn pop-btn-coral text-xs px-3 py-1">
+                  Clear
+                </button>
+              </div>
+            </div>
+
+            <!-- Grid of Sortable Cards -->
+            <div id="fileCardsGrid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Progress Bar Component -->
+          <div id="processingSection" class="hidden pop-card p-6 space-y-3">
+            <div class="flex items-center justify-between text-xs font-black">
+              <div class="flex items-center gap-2 text-ground">
+                <svg class="animate-spin -ml-0.5 mr-1 h-5 w-5 text-ground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span id="processingStatusText" class="text-sm">Converting your files...</span>
+              </div>
+              <span id="processingPercentText" class="font-mono text-sm font-black text-slate-800">0%</span>
+            </div>
+            <!-- Progress track -->
+            <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden p-0.5">
+              <div id="progressBarFill" class="bg-gradient-to-r from-ground to-indigo-500 h-full rounded-full transition-all duration-200 ease-out" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <!-- Results Section -->
+          <div id="resultsSection" class="hidden space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/20 backdrop-blur-md p-4 rounded-2xl border border-white/30 text-white">
+              <div>
+                <h3 class="text-lg font-black font-heading flex items-center gap-2">
+                  <span class="status-circle-done !w-6 !h-6 text-xs">✓</span>
+                  <span>Conversion Finished! 🎉</span>
+                </h3>
+                <p id="resultsSummaryText" class="text-xs text-blue-100 font-bold">Your files are ready to download.</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="downloadZipBtn" class="pop-btn pop-btn-mint text-xs px-4 py-2 font-black">
+                  <i data-lucide="archive" class="w-4 h-4"></i>
+                  <span>Download All as .ZIP</span>
+                </button>
+                <button id="convertAnotherBtn" class="pop-btn pop-btn-white text-xs px-3.5 py-2">
+                  Reset
+                </button>
+              </div>
+            </div>
+
+            <!-- Converted Results Grid -->
+            <div id="resultsGrid" class="space-y-3">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Tool Settings & Primary Action -->
+        <div class="space-y-6">
+          <div class="pop-card p-6 space-y-6 sticky top-24">
+            
+            <div class="flex items-center justify-between pb-3 border-b-2 border-slate-100">
+              <h3 class="text-sm font-black font-heading uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                <i data-lucide="sliders" class="w-4 h-4 text-ground"></i>
+                <span>Options & Settings</span>
+              </h3>
+              <span id="activeToolTag" class="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-indigo-50 text-ground border border-indigo-100 uppercase">
+                DEFAULT
+              </span>
+            </div>
+
+            <!-- Dynamic Settings Container (populated by script.js) -->
+            <div id="toolSettingsContainer" class="space-y-5">
+              <!-- Populated by script.js -->
+            </div>
+
+            <!-- Primary Tactile Convert Button -->
+            <div class="pt-2">
+              <button id="convertBtn" disabled class="pop-btn pop-btn-yellow w-full py-4 px-6 text-base tracking-wide font-black">
+                <i data-lucide="play" class="w-5 h-5 fill-current"></i>
+                <span id="convertBtnText">Convert Now!</span>
+              </button>
+              <p id="convertBtnHelp" class="text-xs text-center text-slate-400 font-bold mt-2">
+                Select or drop files to activate conversion.
+              </p>
+            </div>
+
+            <!-- Friendly Guarantee Info Box -->
+            <div class="p-4 rounded-2xl bg-indigo-50 border border-indigo-100 text-xs text-indigo-900 font-bold space-y-1">
+              <div class="flex items-center gap-2 font-black text-ground">
+                <i data-lucide="shield-check" class="w-4 h-4"></i>
+                <span>100% In-Browser Engine</span>
+              </div>
+              <p class="text-[11px] text-slate-500 font-semibold leading-relaxed">
+                Rendered with HTML5 Canvas & Web Workers. Private files never leave your device.
+              </p>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ================= IMAGE PREVIEW MODAL ================= -->
+  <div id="previewModal" class="hidden fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-pop">
+    <div class="relative max-w-4xl w-full pop-card overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="flex items-center justify-between p-4 border-b-2 border-slate-100 text-slate-900">
+        <div class="flex items-center gap-2">
+          <span class="w-7 h-7 rounded-lg bg-indigo-50 text-ground flex items-center justify-center font-bold">
+            <i data-lucide="eye" class="w-4 h-4"></i>
+          </span>
+          <span id="previewModalTitle" class="text-sm font-black font-heading truncate">Image Preview</span>
+        </div>
+        <button id="closePreviewBtn" class="pop-btn pop-btn-white p-1.5 text-slate-500 hover:text-slate-900">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div class="p-6 flex-1 overflow-auto flex items-center justify-center bg-slate-50 checkerboard-bg">
+        <img id="previewModalImg" src="" alt="Full Preview" class="max-w-full max-h-[65vh] object-contain rounded-xl shadow-lg border-2 border-white" />
+      </div>
+      <div class="p-4 border-t-2 border-slate-100 bg-white flex justify-between items-center text-xs font-bold text-slate-500">
+        <span id="previewModalMeta">Dimensions: 0 x 0</span>
+        <button id="previewModalDownloadBtn" class="pop-btn pop-btn-mint px-4 py-2 text-xs font-black">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i> Download
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TOAST NOTIFICATION CONTAINER ================= -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none">
+    <!-- Dynamically injected toasts -->
+  </div>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="mt-auto border-t-2 border-white/20 bg-ground-dark/40 py-6 text-white text-xs font-bold">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <span class="w-6 h-6 rounded-lg bg-pop-yellow text-amber-950 font-black flex items-center justify-center text-[11px]">PF</span>
+        <span class="font-black font-heading text-sm">PixelFlow</span>
+        <span class="text-blue-200">• Playful 100% Client-Side In-Browser Converter</span>
+      </div>
+      <div class="flex items-center gap-3 text-blue-200">
+        <span>Files stay on your machine</span>
+        <span>•</span>
+        <span>HTML5 / Canvas / jsPDF / JSZip</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Script -->
+  <script src="script.js"></script>
+</body>
+</html>

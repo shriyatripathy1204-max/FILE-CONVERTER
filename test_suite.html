@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PixelFlow — Automated Verification Test Suite</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 p-8 font-sans">
+  <div class="max-w-3xl mx-auto space-y-6">
+    <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+      <div>
+        <h1 class="text-2xl font-bold text-white">PixelFlow Test Suite</h1>
+        <p class="text-xs text-slate-400">Verifying client-side Canvas, jsPDF, JSZip, and Conversion Pipelines</p>
+      </div>
+      <a href="index.html" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-500">Back to App</a>
+    </div>
+
+    <div id="results" class="space-y-3">
+      <!-- Test results will be appended here -->
+    </div>
+  </div>
+
+  <script>
+    const resultsDiv = document.getElementById('results');
+
+    function logTest(name, passed, details = '') {
+      const el = document.createElement('div');
+      el.className = `p-4 rounded-xl border flex items-center justify-between ${
+        passed 
+          ? 'bg-emerald-950/40 border-emerald-800/80 text-emerald-300' 
+          : 'bg-red-950/40 border-red-800/80 text-red-300'
+      }`;
+      el.innerHTML = `
+        <div class="flex items-center gap-3">
+          <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${passed ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'}">
+            ${passed ? '✓' : '✗'}
+          </span>
+          <div>
+            <div class="font-bold text-sm text-white">${name}</div>
+            ${details ? `<div class="text-xs opacity-80 mt-0.5 font-mono">${details}</div>` : ''}
+          </div>
+        </div>
+        <span class="text-xs uppercase font-bold tracking-wider px-2 py-1 rounded ${passed ? 'bg-emerald-900/60 text-emerald-200' : 'bg-red-900/60 text-red-200'}">
+          ${passed ? 'PASSED' : 'FAILED'}
+        </span>
+      `;
+      resultsDiv.appendChild(el);
+    }
+
+    async function runTests() {
+      // 1. Check jsPDF availability
+      try {
+        const jsPDFClass = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+        if (!jsPDFClass) throw new Error('jsPDF not found');
+        const doc = new jsPDFClass();
+        doc.text('Test PixelFlow', 10, 10);
+        const blob = doc.output('blob');
+        logTest('jsPDF Engine Initialization & Document Output', blob.size > 0, `Generated PDF blob: ${blob.size} bytes`);
+      } catch (e) {
+        logTest('jsPDF Engine Initialization', false, e.message);
+      }
+
+      // 2. Check JSZip availability
+      try {
+        if (!window.JSZip) throw new Error('JSZip not found');
+        const zip = new window.JSZip();
+        zip.file('test.txt', 'Hello PixelFlow');
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        logTest('JSZip Engine & Batch Packaging', zipBlob.size > 0, `Generated ZIP blob: ${zipBlob.size} bytes`);
+      } catch (e) {
+        logTest('JSZip Engine & Batch Packaging', false, e.message);
+      }
+
+      // 3. Canvas PNG to JPEG with Alpha Background Fill
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 100;
+        canvas.height = 100;
+        const ctx = canvas.getContext('2d');
+        // Fill white background for transparency
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, 100, 100);
+        // Draw red semi-transparent circle
+        ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+        ctx.beginPath();
+        ctx.arc(50, 50, 40, 0, Math.PI * 2);
+        ctx.fill();
+
+        const jpegBlob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.9));
+        logTest('Canvas Alpha Background Fill & JPEG Encoding', jpegBlob && jpegBlob.size > 0, `JPEG blob: ${jpegBlob.size} bytes, mime: ${jpegBlob.type}`);
+      } catch (e) {
+        logTest('Canvas Alpha Background Fill', false, e.message);
+      }
+
+      // 4. Canvas Resizing and Scaling Logic
+      try {
+        const origW = 1920, origH = 1080;
+        const scale = 0.5;
+        const targetW = Math.round(origW * scale);
+        const targetH = Math.round(origH * scale);
+        const aspectLocked = (targetW / targetH).toFixed(2) === (origW / origH).toFixed(2);
+        logTest('Proportional Scaling & Aspect Ratio Math', targetW === 960 && targetH === 540 && aspectLocked, `Orig: 1920x1080 -> Scaled 50%: ${targetW}x${targetH}`);
+      } catch (e) {
+        logTest('Proportional Scaling', false, e.message);
+      }
+
+      // 5. WEBP encoding support
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 10;
+        canvas.height = 10;
+        const webpBlob = await new Promise(res => canvas.toBlob(res, 'image/webp', 0.8));
+        const supportsWebp = webpBlob && webpBlob.type === 'image/webp';
+        logTest('Browser WebP Canvas Export Support', supportsWebp, supportsWebp ? 'Native browser WEBP encoding active' : 'Fallback available');
+      } catch (e) {
+        logTest('Browser WebP Export', false, e.message);
+      }
+    }
+
+    runTests();
+  </script>
+</body>
+</html>

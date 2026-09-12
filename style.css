@@ -1,0 +1,385 @@
+/* ==========================================================================
+   PixelFlow — Playful Pop UI Style Sheet
+   A bright, friendly, modern consumer-app look: bold colour ground,
+   rounded white cards, and chunky tactile 3D buttons.
+   ========================================================================== */
+
+/* Typography Custom Classes */
+.font-heading {
+  font-family: 'Baloo 2', cursive, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.font-body {
+  font-family: 'Nunito', system-ui, -apple-system, sans-serif;
+}
+
+/* Animations */
+@keyframes popBounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(12px);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.02) translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes gentleFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-pop {
+  animation: popBounceIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-float {
+  animation: gentleFloat 3.5s ease-in-out infinite;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+/* ==========================================================================
+   CHUNKY TACTILE BUTTONS (KEY SIGNATURE OF PLAYFUL POP UI)
+   ========================================================================== */
+
+.pop-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.15s ease;
+  position: relative;
+  outline: none;
+}
+
+.pop-btn:hover {
+  filter: brightness(1.04);
+}
+
+.pop-btn:active {
+  transform: translateY(4px) !important;
+}
+
+/* 1. Sunny Yellow Tactile Button (Primary Hero Action) */
+.pop-btn-yellow {
+  background-color: #FFD12E;
+  color: #573E00;
+  box-shadow: 0 5px 0 #D49D00;
+}
+.pop-btn-yellow:active {
+  box-shadow: 0 1px 0 #D49D00 !important;
+}
+.pop-btn-yellow:disabled {
+  background-color: #F6E29F;
+  color: #9C8348;
+  box-shadow: 0 4px 0 #DFC176;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* 2. Coral Pink Tactile Button */
+.pop-btn-coral {
+  background-color: #FF5A5F;
+  color: #FFFFFF;
+  box-shadow: 0 5px 0 #D4363B;
+}
+.pop-btn-coral:active {
+  box-shadow: 0 1px 0 #D4363B !important;
+}
+
+/* 3. Mint Green Tactile Button */
+.pop-btn-mint {
+  background-color: #06D6A0;
+  color: #004432;
+  box-shadow: 0 5px 0 #049E75;
+}
+.pop-btn-mint:active {
+  box-shadow: 0 1px 0 #049E75 !important;
+}
+
+/* 4. Purple Berry Tactile Button */
+.pop-btn-purple {
+  background-color: #8338EC;
+  color: #FFFFFF;
+  box-shadow: 0 5px 0 #5B1CB7;
+}
+.pop-btn-purple:active {
+  box-shadow: 0 1px 0 #5B1CB7 !important;
+}
+
+/* 5. Clean White Tactile Button */
+.pop-btn-white {
+  background-color: #FFFFFF;
+  color: #1E293B;
+  box-shadow: 0 5px 0 #CBD5E1;
+}
+.pop-btn-white:active {
+  box-shadow: 0 1px 0 #CBD5E1 !important;
+}
+.pop-btn-white:hover {
+  color: #4361EE;
+}
+
+/* 6. Translucent Glass Tactile Button (On bold ground) */
+.pop-btn-glass {
+  background-color: rgba(255, 255, 255, 0.22);
+  color: #FFFFFF;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15);
+}
+.pop-btn-glass:active {
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.15) !important;
+}
+.pop-btn-glass:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Option selector pill in settings */
+.pop-pill-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 0.75rem;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  user-select: none;
+}
+
+.pop-pill-option.active {
+  background-color: #4361EE;
+  color: #FFFFFF;
+  box-shadow: 0 3px 0 #2A42B6;
+}
+
+.pop-pill-option:not(.active) {
+  background-color: #F1F5F9;
+  color: #475569;
+  box-shadow: 0 3px 0 #E2E8F0;
+}
+.pop-pill-option:not(.active):hover {
+  background-color: #E2E8F0;
+  color: #1E293B;
+}
+
+/* ==========================================================================
+   ROUNDED WHITE CARDS
+   ========================================================================== */
+
+.pop-card {
+  background-color: #FFFFFF;
+  border-radius: 24px;
+  box-shadow: 0 12px 30px -4px rgba(22, 34, 76, 0.12), 0 4px 12px rgba(0, 0, 0, 0.04);
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+}
+
+.pop-card-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px -6px rgba(22, 34, 76, 0.22);
+}
+
+/* Sortable Thumbnail Cards */
+.sortable-card {
+  background: #FFFFFF;
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+  user-select: none;
+}
+
+.sortable-card.dragging {
+  opacity: 0.45;
+  transform: scale(0.95);
+  box-shadow: 0 0 0 3px #FFD12E !important;
+}
+
+.sortable-card.drag-over-left {
+  box-shadow: -4px 0 0 0 #4361EE !important;
+  transform: translateX(4px);
+}
+
+.sortable-card.drag-over-right {
+  box-shadow: 4px 0 0 0 #4361EE !important;
+  transform: translateX(-4px);
+}
+
+/* Checkerboard background for transparent previews */
+.checkerboard-bg {
+  background-color: #FFFFFF;
+  background-image: 
+    linear-gradient(45deg, #F1F5F9 25%, transparent 25%), 
+    linear-gradient(-45deg, #F1F5F9 25%, transparent 25%), 
+    linear-gradient(45deg, transparent 75%, #F1F5F9 75%), 
+    linear-gradient(-45deg, transparent 75%, #F1F5F9 75%);
+  background-size: 14px 14px;
+  background-position: 0 0, 0 7px, 7px -7px, -7px 0px;
+}
+
+/* ==========================================================================
+   FRIENDLY CIRCULAR INDICATORS & STATUSES
+   ========================================================================== */
+
+.status-circle-done {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #06D6A0;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 0 #049E75;
+  flex-shrink: 0;
+}
+
+.status-circle-todo {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid #CBD5E1;
+  background-color: #FFFFFF;
+  flex-shrink: 0;
+}
+
+/* Icon Disc Container */
+.icon-disc {
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.pop-card:hover .icon-disc {
+  transform: scale(1.1) rotate(-4deg);
+}
+
+/* ==========================================================================
+   FORM CONTROLS (CANDY SLIDERS, COLOR PICKERS)
+   ========================================================================== */
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 10px;
+  background: #E2E8F0;
+  border-radius: 9999px;
+  outline: none;
+  transition: background 0.15s;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #FFD12E;
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 3px 0 #D49D00, 0 4px 8px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #FFD12E;
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 3px 0 #D49D00, 0 4px 8px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+input[type="color"] {
+  -webkit-appearance: none;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  cursor: pointer;
+  padding: 0;
+  background: transparent;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.15);
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border: 2px solid #FFFFFF;
+  border-radius: 12px;
+}
+
+/* Dropzone dragover highlight */
+#dropzoneContainer.drag-active {
+  border-color: #FFD12E !important;
+  background-color: #FFFDF0 !important;
+  transform: scale(1.02);
+}
+
+/* Toast animations */
+.toast-enter {
+  animation: popBounceIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.toast-leave {
+  animation: toastSlideOut 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes toastSlideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.9);
+  }
+}
