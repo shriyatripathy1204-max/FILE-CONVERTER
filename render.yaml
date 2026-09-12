@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: pixelflow
+    env: node
+    plan: free
+    region: oregon
+    
+    # Build configuration
+    buildCommand: npm install
+    startCommand: npm start
+    
+    # Environment variables
+    envVars:
+      - key: NODE_ENV
+        value: production
+    
+    # Health check configuration
+    healthCheckPath: /health
+    healthCheckInterval: 30
+    
+    # Auto-deploy from GitHub
+    autoDeploy: true
+    
+    # Build cache (speeds up subsequent deployments)
+    buildCache: true
